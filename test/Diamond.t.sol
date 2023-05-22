@@ -7,6 +7,7 @@ import { IDiamondCut } from "../src/interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "../src/interfaces/IDiamondLoupe.sol";
 
 //libraries
+import { console2 } from "forge-std/console2.sol";
 
 //contracts
 import { TestUtils } from "./TestUtils.sol";
@@ -15,6 +16,9 @@ import { DiamondCutFacet } from "../src/facets/DiamondCutFacet.sol";
 import { DiamondLoupeFacet } from "../src/facets/DiamondLoupeFacet.sol";
 import { OwnershipFacet } from "../src/facets/OwnershipFacet.sol";
 import { Diamond, DiamondArgs } from "../src/Diamond.sol";
+
+// test contract
+import { Test1Facet } from "../src/facets/Test1Facet.sol";
 
 contract DiamondTest is TestUtils {
   Diamond diamond;
@@ -97,5 +101,26 @@ contract DiamondTest is TestUtils {
   function test_checkOwner() external {
     OwnershipFacet _ownershipFacet = OwnershipFacet(address(diamond));
     assertEq(address(this), _ownershipFacet.owner());
+  }
+
+  function testAddFacet1() external {
+    Test1Facet test1Facet = new Test1Facet();
+
+    // get function selectors but remove first element (supportsInterface)
+    bytes4[] memory fromGenSelectors = removeElement(uint256(0), generateSelectors("Test1Facet"));
+
+    // array of functions to add
+    FacetCut[] memory cut = new FacetCut[](1);
+    cut[0] = FacetCut({
+      facetAddress: address(test1Facet),
+      action: IDiamond.FacetCutAction.Add,
+      functionSelectors: fromGenSelectors
+    });
+
+    diamondCut.diamondCut(cut, address(0x0), "");
+
+    // call function on diamond
+    Test1Facet(address(diamond)).test1Func1();
+    console2.log(Test1Facet(address(diamond)).test1Func2());
   }
 }
