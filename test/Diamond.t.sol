@@ -130,6 +130,6 @@ contract DiamondTest is TestUtils {
 
     // call function on diamond
     Test1Facet(address(diamond)).test1Func1();
-    console.log(Test1Facet(address(diamond)).test1Func2());
+    Test1Facet(address(diamond)).test1Func2();
   }
 }
