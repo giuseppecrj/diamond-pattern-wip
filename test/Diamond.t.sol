@@ -7,7 +7,7 @@ import { IDiamondCut } from "../src/interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "../src/interfaces/IDiamondLoupe.sol";
 
 //libraries
-import { console2 } from "forge-std/console2.sol";
+import { console } from "forge-std/console.sol";
 
 //contracts
 import { TestUtils } from "./TestUtils.sol";
@@ -16,6 +16,7 @@ import { DiamondCutFacet } from "../src/facets/DiamondCutFacet.sol";
 import { DiamondLoupeFacet } from "../src/facets/DiamondLoupeFacet.sol";
 import { OwnershipFacet } from "../src/facets/OwnershipFacet.sol";
 import { Diamond, DiamondArgs } from "../src/Diamond.sol";
+import { DiamondInit } from "../src/upgradeInitializer/DiamondInit.sol";
 
 // test contract
 import { Test1Facet } from "../src/facets/Test1Facet.sol";
@@ -25,6 +26,7 @@ contract DiamondTest is TestUtils {
   DiamondCutFacet diamondCutFacet;
   DiamondLoupeFacet diamondLoupeFacet;
   OwnershipFacet ownershipFacet;
+  DiamondInit diamondInit;
 
   // interfaces with Facet ABI connected to diamond address
   IDiamondCut diamondCut;
@@ -40,8 +42,15 @@ contract DiamondTest is TestUtils {
     ownershipFacet = new OwnershipFacet();
     facetNames = ["DiamondCutFacet", "DiamondLoupeFacet", "OwnershipFacet"];
 
+    // init
+    diamondInit = new DiamondInit();
+
     // diamond args
-    DiamondArgs memory _args = DiamondArgs({ owner: address(this), init: address(0), initCalldata: "" });
+    DiamondArgs memory _args = DiamondArgs({
+      owner: address(this),
+      init: address(diamondInit),
+      initCalldata: abi.encodeCall(DiamondInit.init, ())
+    });
 
     // FacetCut with CutFacet for initialization
     FacetCut[] memory cut0 = new FacetCut[](1);
@@ -74,7 +83,7 @@ contract DiamondTest is TestUtils {
     diamondLoupe = IDiamondLoupe(address(diamond));
 
     // upgrade the diamond with the new facets
-    diamondCut.diamondCut(cut, address(0x0), "");
+    diamondCut.diamondCut(cut, address(0), "");
 
     // get facet addresses
     facetAddressList = diamondLoupe.facetAddresses();
@@ -121,6 +130,6 @@ contract DiamondTest is TestUtils {
 
     // call function on diamond
     Test1Facet(address(diamond)).test1Func1();
-    console2.log(Test1Facet(address(diamond)).test1Func2());
+    console.log(Test1Facet(address(diamond)).test1Func2());
   }
 }
