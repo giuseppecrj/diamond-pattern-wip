@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "solidity-stringutils/src/strings.sol";
+import "../src/libraries/strings.sol";
 import "../src/interfaces/IDiamond.sol";
 import "../src/interfaces/IDiamondLoupe.sol";
 
